@@ -1,6 +1,6 @@
 section .data               
 ;Cambiar Nombre y Apellido por vuestros datos.
-developer db "_David_ _Cucalon_",0
+developer db "_David_ _Cucalon",0
 
 ;Constantes que también están definidas en C.
 DimMatrix    equ 4      
