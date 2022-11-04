@@ -273,6 +273,7 @@ showNumberP1:
    
    for_sn_e:
 
+   ; sacamos de la pila el contenido que habiamos guardado de los registros
    pop r9
    pop r8
 
@@ -308,6 +309,7 @@ updateBoardP1:
    push rbp
    mov  rbp, rsp
 
+   ; guardamos el contenido de los registros
    push r8
    push r9
    push r10
@@ -362,7 +364,8 @@ updateBoardP1:
    mov DWORD[rowScreen], 18
    mov DWORD[colScreen], 28
    call gotoxyP1
-   
+
+   ; sacamos de la pila el contenido que habiamos guardado de los registros
    pop r14
    pop r13
    pop r12
@@ -394,7 +397,36 @@ copyMatrixP1:
    push rbp
    mov  rbp, rsp
    
+   ;int i,j;
    
+   ;for (i=0; i<DimMatrix; i++) {
+   ;   for (j=0; j<DimMatrix; j++) {   
+   ;      m[i][j] = mRotated[i][j];
+   ;   }
+   ;}
+   
+   ;}
+   
+   mov r8w, 0; row selector  
+   for_cm_1_s:
+      cmp r8w, 30
+      jg for_cm_1_e
+
+      mov r9w, 0; column selector {0 ... 30}
+
+      for_cm_2_s:
+         cmp r9w, 6
+         jg for_cm_2_e
+
+         mov r10w, r8w
+         add r10w, r9w
+
+         mov r11w
+
+      for_cm_2_e:
+      add r8w, r9w; row + column
+
+   for_cm_1_e:
    
    mov rsp, rbp
    pop rbp
