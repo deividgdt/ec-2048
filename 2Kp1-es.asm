@@ -227,22 +227,6 @@ showNumberP1:
    push rbp
    mov  rbp, rsp
    
-   ;int n = number;
-   ;int i;
-
-   ;if (n > 999999) n = 999999;
-   ;for (i=0;i<6;i++){
-   ;  charac = ' ';
-   ;  if (n > 0) {
-	;   charac = n%10;     //residuo
-	;   n = n/10;          //cociente
-	;   charac = charac + '0';
-	;  }
-   ;  gotoxyP1_C();
-   ;  printchP1_C();
-   ;  colScreen--;
-   ;}
-
    mov r8d, DWORD[number]; r8d = n
    cmp r8d, 999999
    jle for_i
@@ -250,10 +234,11 @@ showNumberP1:
    ; Si n es mayor que 999999, entonces
    mov r8d, 999999
    
+   ; Si n es menor o igual que 999999
    for_i: 
-      mov r9b, 0; r9b = i
+      mov r9d, 0; r9b = i
    for_s:
-      cmp r9b, 6; i <= 6
+      cmp r9d, 6; i <= 6
       jge for_e
 
       mov BYTE[charac], " "
@@ -262,20 +247,24 @@ showNumberP1:
          cmp r8d, 0
          jle if_2_e
          
-         mov ax, 10; divisor
-         mov rcx, r8d; dividendo
-         div rcx; 
-         ;mov BYTE[charac], ah; residuo
-         ;mov rax, al ; cociente
-
-         mov QWORD[charac], rcx
+         ;EDX:EAX
+         mov eax, r8d; dividendo
+         xor edx, edx; limpiamos edx
+         mov ecx, 10; divisor
+         div ecx; se realiza la division 32bits - EDX:EAX / ECX 
+         
+         ; Resultado: EAX / Residuo: EDX
+         add edx, 30h; para mostrar el valor en ASCII sumamos 30h
+         mov [charac], edx; guardamos el valor hex en [charac]
+         mov r8d, eax; n = resultado
 
       if_2_e:
+
       call gotoxyP1
       call printchP1
       dec QWORD[colScreen]
    
-      inc rbx; i++
+      inc r9d; i++
       jmp for_s
    
    for_e:
