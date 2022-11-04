@@ -226,26 +226,30 @@ getchP1:
 showNumberP1:
    push rbp
    mov  rbp, rsp
-   
+
+   ; mantenemos integridad de registros
+   push r8
+   push r9
+
    mov r8d, DWORD[number]; r8d = n
    cmp r8d, 999999
-   jle for_i
+   jle for_sn_i
    
    ; Si n es mayor que 999999, entonces
    mov r8d, 999999
    
    ; Si n es menor o igual que 999999
-   for_i: 
+   for_sn_i: 
       mov r9d, 0; r9b = i
-   for_s:
+   for_sn_s:
       cmp r9d, 6; i <= 6
-      jge for_e
+      jge for_sn_e
 
       mov BYTE[charac], " "
       
-      if_2_s: 
+      if_sn_2_s: 
          cmp r8d, 0
-         jle if_2_e
+         jle if_sn_2_e
          
          ;EDX:EAX
          mov eax, r8d; dividendo
@@ -258,16 +262,19 @@ showNumberP1:
          mov [charac], edx; guardamos el valor hex en [charac]
          mov r8d, eax; n = resultado
 
-      if_2_e:
+      if_sn_2_e:
 
       call gotoxyP1
       call printchP1
-      dec QWORD[colScreen]
+      dec DWORD[colScreen]
    
       inc r9d; i++
-      jmp for_s
+      jmp for_sn_s
    
-   for_e:
+   for_sn_e:
+
+   pop r9
+   pop r8
 
    mov rsp, rbp
    pop rbp
@@ -300,8 +307,69 @@ showNumberP1:
 updateBoardP1:
    push rbp
    mov  rbp, rsp
+
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   push r14
+
+   mov r14d, DWORD[score]; guardamos el score temporalmente
+  
+   mov r8d, 10; rowScreenAux = 10
+   mov r10d, 0; row selector
+   for_ub_1_s:
+      cmp r10d, 30; 
+      jg for_ub_1_e
+      mov r9d, 17; colScreenAux = 17
+
+      mov r11d, 0; column selector
+      for_ub_2_s:
+         cmp r11d, 6; por cada columna {0,2,4,6}
+         jg for_ub_2_e
+         
+         mov r13d, r10d; guardamos el valor de la fila {0,8,16,24} 
+         add r13d, r11d; le sumamos la columna {0,2,4,6}
+
+         mov r12w, [m+r13d]; r12w = m[0 ... 30]
+         mov WORD[number], r12w
+
+         mov DWORD[rowScreen], r8d
+         mov DWORD[colScreen], r9d
+         
+         call showNumberP1
+         
+         add r9d, 9; aumentar column
+         add r11d, 2; column selector
+
+         jmp for_ub_2_s
+      
+      for_ub_2_e:
+
+      add r8d, 2; aumentar row
+      add r10d, r11d; row selector {0,8,16,24} + 8
+
+      jmp for_ub_1_s
+
+   for_ub_1_e:   
+
+   mov DWORD[number], r14d; cargamos el score
+   mov DWORD[rowScreen], 18
+   mov DWORD[colScreen], 26
+   call showNumberP1
+   mov DWORD[rowScreen], 18
+   mov DWORD[colScreen], 28
+   call gotoxyP1
    
-   
+   pop r14
+   pop r13
+   pop r12
+   pop r11
+   pop r10
+   pop r9
+   pop r8
    
    mov rsp, rbp
    pop rbp
