@@ -1,6 +1,6 @@
 section .data               
 ;Cambiar Nombre y Apellido por vuestros datos.
-developer db "_David_ _Cucalon",0
+developer db "_David_ _Cucalon_",0
 
 ;Constantes que también están definidas en C.
 DimMatrix    equ 4      
@@ -227,8 +227,59 @@ showNumberP1:
    push rbp
    mov  rbp, rsp
    
+   ;int n = number;
+   ;int i;
+
+   ;if (n > 999999) n = 999999;
+   ;for (i=0;i<6;i++){
+   ;  charac = ' ';
+   ;  if (n > 0) {
+	;   charac = n%10;     //residuo
+	;   n = n/10;          //cociente
+	;   charac = charac + '0';
+	;  }
+   ;  gotoxyP1_C();
+   ;  printchP1_C();
+   ;  colScreen--;
+   ;}
+
+   mov r8d, DWORD[number]; r8d = n
+   cmp r8d, 999999
+   jle for_i
    
+   ; Si n es mayor que 999999, entonces
+   mov r8d, 999999
    
+   for_i: 
+      mov r9b, 0; r9b = i
+   for_s:
+      cmp r9b, 6; i <= 6
+      jge for_e
+
+      mov BYTE[charac], " "
+      
+      if_2_s: 
+         cmp r8d, 0
+         jle if_2_e
+         
+         mov ax, 10; divisor
+         mov rcx, r8d; dividendo
+         div rcx; 
+         ;mov BYTE[charac], ah; residuo
+         ;mov rax, al ; cociente
+
+         mov QWORD[charac], rcx
+
+      if_2_e:
+      call gotoxyP1
+      call printchP1
+      dec QWORD[colScreen]
+   
+      inc rbx; i++
+      jmp for_s
+   
+   for_e:
+
    mov rsp, rbp
    pop rbp
    ret
