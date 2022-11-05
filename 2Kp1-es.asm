@@ -467,6 +467,54 @@ rotateMatrixRP1:
    push rbp
    mov  rbp, rsp
    
+   ; guardamos el contenido de los registros
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   
+   mov r8d, 6; mRotated = empieza en 6 y decrementa -2 cada vuelta
+   mov r9d, 0; m = empieza en 0 y aumenta 8 cada vuelta
+   for_rm_1_s:
+      cmp r8d, 0; 
+      jl for_rm_1_e
+
+      mov r10d, r8d; mRotated = empieza en r8d, aumenta 8 cada vuelta
+      mov r11d, r9d; m = empieza en en r9d, aumenta 2 cada vuelta
+      mov r12w, 4; indice del for, max 4 min 0
+      for_rm_2_s:
+         cmp r12w, 0
+         je for_rm_2_e
+
+         mov r13w, WORD[m+r11d]
+         mov WORD[mRotated+r10d], r13w
+
+         add r10d, 8; mRotated+(r10d+8)
+         add r11d, 2; m+(r11d+2)
+
+         sub r12w, 1; decrementamos el indice del for en 1
+         jmp for_rm_2_s
+      
+      for_rm_2_e:
+
+      sub r8d, 2
+      add r9d, 8
+       
+      jmp for_rm_1_s
+
+   for_rm_1_e:
+
+   call copyMatrixP1
+
+   ; sacamos de la pila el contenido que habiamos guardado de los registros
+   pop r13
+   pop r12
+   pop r11
+   pop r10
+   pop r9
+   pop r8
    
    
    mov rsp, rbp
