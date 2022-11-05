@@ -321,13 +321,13 @@ updateBoardP1:
    mov r14d, DWORD[score]; guardamos el score temporalmente
   
    mov r8d, 10; rowScreenAux = 10
-   mov r10d, 0; row selector
+   mov r10d, 0; row selector {0 ... 30}
    for_ub_1_s:
-      cmp r10d, 30; 
+      cmp r10d, 30; por cada fila {0,8,16,24}
       jg for_ub_1_e
       mov r9d, 17; colScreenAux = 17
 
-      mov r11d, 0; column selector
+      mov r11d, 0; column selector {0 ... 6}
       for_ub_2_s:
          cmp r11d, 6; por cada columna {0,2,4,6}
          jg for_ub_2_e
@@ -343,21 +343,21 @@ updateBoardP1:
          
          call showNumberP1
          
-         add r9d, 9; aumentar column
+         add r9d, 9; aumentar columnScreenAux
          add r11d, 2; column selector
 
          jmp for_ub_2_s
       
       for_ub_2_e:
 
-      add r8d, 2; aumentar row
+      add r8d, 2; aumentar rowScreenAux
       add r10d, r11d; row selector {0,8,16,24} + 8
 
       jmp for_ub_1_s
 
    for_ub_1_e:   
 
-   mov DWORD[number], r14d; cargamos el score
+   mov DWORD[number], r14d; cargamos el score en number
    mov DWORD[rowScreen], 18
    mov DWORD[colScreen], 26
    call showNumberP1
@@ -396,37 +396,44 @@ updateBoardP1:
 copyMatrixP1:
    push rbp
    mov  rbp, rsp
+
+   ; guardamos el contenido de los registros
+   push r8
+   push r9
+   push r10
+   push r11
    
-   ;int i,j;
-   
-   ;for (i=0; i<DimMatrix; i++) {
-   ;   for (j=0; j<DimMatrix; j++) {   
-   ;      m[i][j] = mRotated[i][j];
-   ;   }
-   ;}
-   
-   ;}
-   
-   mov r8w, 0; row selector  
+   mov r8d, 0; row selector  {0 ... 30}
    for_cm_1_s:
-      cmp r8w, 30
+      cmp r8d, 30; por cada fila {0,8,16,24}
       jg for_cm_1_e
 
-      mov r9w, 0; column selector {0 ... 30}
-
+      mov r9d, 0; column selector {0 ... 6}
       for_cm_2_s:
-         cmp r9w, 6
+         cmp r9d, 6; por cada columna {0,2,4,6}
          jg for_cm_2_e
 
-         mov r10w, r8w
-         add r10w, r9w
+         mov r10d, r8d; almacenamos el valor de fila {0,8,16,24}
+         add r10d, r9d; sumamos el valor de la columna {0,2,4,6}
 
-         mov r11w
+         mov r11w, [mRotated+r10d]; guardamos el valor de la matriz a copia temporalmente
+         mov [m+r10d], r11w; lo asignamos a la matriz original
+
+         add r9d, 2; column selector {n+2}
+         jmp for_cm_2_s
 
       for_cm_2_e:
-      add r8w, r9w; row + column
+
+      add r8d, r9d; row selector {0,8,16,24} + 8
+      jmp for_cm_1_s
 
    for_cm_1_e:
+
+   ; sacamos de la pila el contenido que habiamos guardado de los registros
+   pop r11
+   pop r10
+   pop r9
+   pop r8
    
    mov rsp, rbp
    pop rbp
