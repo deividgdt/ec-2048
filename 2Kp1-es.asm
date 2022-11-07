@@ -474,7 +474,11 @@ rotateMatrixRP1:
    push r11
    push r12
    push r13
-   
+
+   ;;;;;;;;;;;;;;
+   ;; mRotated
+   ;;;;;;;;;;;;;;
+
    mov r8d, 6; mRotated = empieza en 6 y decrementa -2 cada vuelta
    mov r9d, 0; m = empieza en 0 y aumenta 8 cada vuelta
    for_rm_1_s:
@@ -549,7 +553,78 @@ shiftNumbersRP1:
    push rbp
    mov  rbp, rsp
 
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
    
+   ;void shiftNumbersRP1_C() {
+   
+   ; int i,j,k;
+   ; for (i=DimMatrix-1; i>=0; i--) {
+   ;    for (j=DimMatrix-1; j>0; j--) {
+   ;      if (m[i][j] == 0) {
+   ;        k = j-1;           
+   ;        while (k>=0 && m[i][k]==0) k--;
+   ;        if (k==-1) {
+   ;           j=0;                
+   ;        } else {
+   ;          m[i][j]=m[i][k];
+   ;           m[i][k]= 0; 
+   ;           state='2';        
+   ;        }
+   ;      }      
+   ;    }
+   ; }
+
+   mov r8d, 30; r8d elemento a_ij 
+   for_snum_1_s:
+      cmp r8d, 0
+      je for_snum_1_e
+
+      if_snum_1_s:
+         cmp WORD[m+r8d], 0
+         jne if_snum_1_e
+
+         mov r9d, r8d; k=r9d
+         sub r9d, 2; k=j-1
+
+         mov r11d, r8d
+         sub r11d, 4
+         while_snum_1_s:
+            cmp r9d, r11d
+            jl while_snum_1_e
+            cmp WORD[m+r9d], 0
+            jne while_snum_1_e
+            sub r9d, 2
+            jmp while_snum_1_s
+         while_snum_1_e:
+
+         if_snum_2_s:
+            mov r12d, r8d
+            sub r12d, 6
+            cmp r9d, r12d
+            jne if_else_snum_2_s
+            add r9d, 2
+         if_else_snum_2_s:
+            mov r10w, WORD[m+r9d]
+            mov WORD[m+r8d], r10w
+            mov WORD[m+r9d], 0
+            mov BYTE[state], 32h
+         if_else_snum_2_e:
+      
+      if_snum_1_e:
+      
+      sub r8d, 2
+      jmp for_snum_1_s
+   for_snum_1_e:
+
+   pop r12
+   pop r11
+   pop r10
+   pop r9
+   pop r8
    
    mov rsp, rbp
    pop rbp
@@ -585,6 +660,74 @@ addPairsRP1:
    push rbp
    mov  rbp, rsp
 
+   ; guardamos el contenido de los registros
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+
+   ;int i,j;
+   ;short p = 0;
+   
+   ;for (i=DimMatrix-1; i>=0; i--) {
+   ;   for (j=DimMatrix-1; j>0; j--) {
+   ;      if ((m[i][j]!=0) && (m[i][j]==m[i][j-1])) {
+   ;         m[i][j]  = m[i][j]*2;
+   ;         m[i][j-1]= 0;
+   ;         p = p + m[i][j];
+   ;      }      
+   ;   }
+   ;}
+   mov r8d, 30; r8w elemento a_ij 
+   for_ap_1_s:
+      cmp r8d, 0
+      je for_ap_1_e
+      
+      mov r9d, r8d
+      sub r9d, 2; r9w elemento a_ij-1 a comparar
+
+      if_ap_1_s:
+         cmp WORD[m+r8d], 0
+         je if_ap_1_e
+         mov r10w, WORD[m+r9d]; r10w almacenamos el valor de a_ij-1
+         cmp WORD[m+r8d], r10w
+         jne if_ap_1_e
+
+         mov r11w, WORD[m+r8d]
+         imul r11w, 2; r11w guardamos el valor de a_ij*2
+
+         mov WORD[m+r8d], r11w; m+r8w guardamos a_ij*2 en a_ij
+         mov WORD[m+r9d], 0; igualamos a_ij-1 a 0
+
+         add r12w, WORD[m+r8d]; le sumamos a p el valor de m+r8w
+         
+      if_ap_1_e:
+      
+      sub r8d, 2; restamos 2 a 30 cada vuelta
+
+      jmp for_ap_1_s
+   for_ap_1_e:
+
+   ;if (p > 0) {
+   ;   state = '2';
+   ;   score = score + p;
+   ;}
+
+   if_ap_2_s:
+      cmp r12w, 0
+      jl if_ap_2_e
+
+      mov BYTE[state], 32h
+      add WORD[score], r12w
+   if_ap_2_e:
+
+   ; sacamos de la pila el contenido que habiamos guardado de los registros
+   pop r12
+   pop r11
+   pop r10
+   pop r9
+   pop r8
    
    
    mov rsp, rbp
