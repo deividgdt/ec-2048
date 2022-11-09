@@ -319,6 +319,7 @@ updateBoardP1:
    push r14
 
    mov r14d, DWORD[score]; guardamos el score temporalmente
+   mov DWORD[number], 0h; limpiamos la variable
   
    mov r8d, 10; rowScreenAux = 10
    mov r10d, 0; row selector {0 ... 30}
@@ -563,53 +564,54 @@ shiftNumbersRP1:
    mov r8d, 30
    for_snum_1_s:
       cmp r8d, 0
-      jle for_snum_1_e
+      jle for_snum_1_e; si es menor que 0, hemos terminado de recorrer la matriz
       
-      mov r9d, 0
+      mov r9d, 0; por cada vuelta {r8d=30,22,14,6}, inicializamos a 0 r9d
       for_snum_2_s:
          cmp r9d, 6
-         je for_snum_2_e
+         je for_snum_2_e; si r9d es igual a 6, hemos terminado de recorrer la fila
          
          mov r10d, r8d
-         sub r10d, r9d; r10d -> m[i][j]
+         sub r10d, r9d; guardamos m[i][j] en r10d, restando r8d{30,22,14,6}-r9d{0,2,4}
          
          if_snum_1_s:
             cmp WORD[m+r10d], 0
-            jne if_snum_1_e
+            jne if_snum_1_e; si m[i][j] no es igual a 0 terminamos esta vuelta
 
             mov r11d, r10d
             sub r11d, 2; r11d = r10d-2 -> m[i][k] 
 
             mov r12d, r8d
-            sub r12d, 6; limite del while
+            sub r12d, 6; limite del while, van de {30-24;22-16;14-8;6-0}
 
             while_snum_1_s:
                cmp r11d, r12d
-               jl while_snum_1_e1
+               jl while_snum_1_e1; si m[i][k] es menor que el limite del while, terminamos en while_snum_1_e1
                cmp WORD[m+r11d], 0
-               jne while_snum_1_e2
+               jne while_snum_1_e2; si m[i][k] NO es igual a 0, terminamos el while en while_snum_1_e2
                sub r11d, 2
                jmp while_snum_1_s
 
             while_snum_1_e1:
-            mov r9d, 6
+            mov r9d, 6; transferimos el valor 6 al registro provocando que finalce una vuelta de for_snum_2
             jmp for_snum_2_s
             while_snum_1_e2:
-            mov r13w, WORD[m+r11d]
-            mov WORD[m+r10d], r13w
-            mov WORD[m+r11d], 0
-            mov BYTE[state], 32h
+            mov r13w, WORD[m+r11d]; almacenamos el valor de m[i][k] en r13w
+            mov WORD[m+r10d], r13w; almacenamos el valor de m[i][k] en m[i][j]
+            mov WORD[m+r11d], 0; borramos el contenido de m[i][k] igualando a 0
+            mov BYTE[state], 32h; establecemos la variable state a '2'
             jmp if_snum_1_e
          
          if_snum_1_e:
-         add r9d, 2
+         add r9d, 2; aumentamos en 2 r9d {0,2,4}
          jmp for_snum_2_s
          
       for_snum_2_e:
-      sub r8d, 8
+      sub r8d, 8; reducimos en 8 r8d={30,22,16,6}
       jmp for_snum_1_s
    for_snum_1_e:
    
+   ; sacamos de la pila el contenido que habiamos guardado de los registros
    pop r13
    pop r12
    pop r11
