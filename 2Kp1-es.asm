@@ -558,68 +558,59 @@ shiftNumbersRP1:
    push r10
    push r11
    push r12
+   push r13
    
-   ;void shiftNumbersRP1_C() {
-   
-   ; int i,j,k;
-   ; for (i=DimMatrix-1; i>=0; i--) {
-   ;    for (j=DimMatrix-1; j>0; j--) {
-   ;      if (m[i][j] == 0) {
-   ;        k = j-1;           
-   ;        while (k>=0 && m[i][k]==0) k--;
-   ;        if (k==-1) {
-   ;           j=0;                
-   ;        } else {
-   ;          m[i][j]=m[i][k];
-   ;           m[i][k]= 0; 
-   ;           state='2';        
-   ;        }
-   ;      }      
-   ;    }
-   ; }
-
-   mov r8d, 30; r8d elemento a_ij 
+   mov r8d, 30
    for_snum_1_s:
       cmp r8d, 0
-      je for_snum_1_e
+      jle for_snum_1_e
+      
+      mov r9d, 0
+      for_snum_2_s:
+         cmp r9d, 6
+         je for_snum_2_e
+         
+         mov r10d, r8d
+         sub r10d, r9d; r10d -> m[i][j]
+         
+         if_snum_1_s:
+            cmp WORD[m+r10d], 0
+            jne if_snum_1_e
 
-      if_snum_1_s:
-         cmp WORD[m+r8d], 0
-         jne if_snum_1_e
+            mov r11d, r10d
+            sub r11d, 2; r11d = r10d-2 -> m[i][k] 
 
-         mov r9d, r8d; k=r9d
-         sub r9d, 2; k=j-1
-
-         mov r11d, r8d
-         sub r11d, 4
-         while_snum_1_s:
-            cmp r9d, r11d
-            jl while_snum_1_e
-            cmp WORD[m+r9d], 0
-            jne while_snum_1_e
-            sub r9d, 2
-            jmp while_snum_1_s
-         while_snum_1_e:
-
-         if_snum_2_s:
             mov r12d, r8d
-            sub r12d, 6
-            cmp r9d, r12d
-            jne if_else_snum_2_s
-            add r9d, 2
-         if_else_snum_2_s:
-            mov r10w, WORD[m+r9d]
-            mov WORD[m+r8d], r10w
-            mov WORD[m+r9d], 0
+            sub r12d, 6; limite del while
+
+            while_snum_1_s:
+               cmp r11d, r12d
+               jl while_snum_1_e1
+               cmp WORD[m+r11d], 0
+               jne while_snum_1_e2
+               sub r11d, 2
+               jmp while_snum_1_s
+
+            while_snum_1_e1:
+            mov r9d, 6
+            jmp for_snum_2_s
+            while_snum_1_e2:
+            mov r13w, WORD[m+r11d]
+            mov WORD[m+r10d], r13w
+            mov WORD[m+r11d], 0
             mov BYTE[state], 32h
-         if_else_snum_2_e:
-      
-      if_snum_1_e:
-      
-      sub r8d, 2
+            jmp if_snum_1_e
+         
+         if_snum_1_e:
+         add r9d, 2
+         jmp for_snum_2_s
+         
+      for_snum_2_e:
+      sub r8d, 8
       jmp for_snum_1_s
    for_snum_1_e:
-
+   
+   pop r13
    pop r12
    pop r11
    pop r10

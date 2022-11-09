@@ -43,8 +43,8 @@ char charac;   //Carácter leído de teclado y para escribir en pantalla.
                                          
 short m[DimMatrix][DimMatrix]        = { {    8,    0,    32,    32},
                                          {    4,    0,     0,    64},
-                                         {    8,    0,   256,   128},
-                                         {    0,    4,   0,  1024} };
+                                         {    8,    4,   4,   0},
+                                         {    5,    4,   0,  1024} };
 
 short mRotated[DimMatrix][DimMatrix] = { {    2,    0,     2,     0},
                                          {    2,    2,     4,     4},
