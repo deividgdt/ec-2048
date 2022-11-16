@@ -1,6 +1,6 @@
 section .data               
 ;Cambiar Nombre y Apellido por vuestros datos.
-developer db "_David_ _Cucalon_",0
+developer db "_David_ _Cucalon_Moreno_",0
 
 ;Constantes que también están definidas en C.
 DimMatrix    equ 4      
@@ -227,7 +227,7 @@ showNumberP1:
    push rbp
    mov  rbp, rsp
 
-   ; mantenemos integridad de registros
+   ; mantenemos integridad de registros almacenandolos en la pila
    push r8
    push r9
 
@@ -253,7 +253,7 @@ showNumberP1:
          
          ;EDX:EAX
          mov eax, r8d; dividendo
-         xor edx, edx; limpiamos edx
+         xor edx, edx; limpiamos edx, el xor usando como fuente y destino el mismo registro deja todo a 0
          mov ecx, 10; divisor
          div ecx; se realiza la division 32bits - EDX:EAX / ECX 
          
@@ -319,10 +319,10 @@ updateBoardP1:
    push r14
 
    mov r14d, DWORD[score]; guardamos el score temporalmente
-   mov DWORD[number], 0h; limpiamos la variable
+   mov DWORD[number], 0h; inicializamos la variable
   
    mov r8d, 10; rowScreenAux = 10
-   mov r10d, 0; row selector {0 ... 30}
+   mov r10d, 0; row selector rango = {0 ... 30}
    for_ub_1_s:
       cmp r10d, 30; por cada fila {0,8,16,24}
       jg for_ub_1_e
@@ -476,10 +476,6 @@ rotateMatrixRP1:
    push r12
    push r13
 
-   ;;;;;;;;;;;;;;
-   ;; mRotated
-   ;;;;;;;;;;;;;;
-
    mov r8d, 6; mRotated = empieza en 6 y decrementa -2 cada vuelta
    mov r9d, 0; m = empieza en 0 y aumenta 8 cada vuelta
    for_rm_1_s:
@@ -520,8 +516,7 @@ rotateMatrixRP1:
    pop r10
    pop r9
    pop r8
-   
-   
+      
    mov rsp, rbp
    pop rbp
    ret
@@ -659,70 +654,71 @@ addPairsRP1:
    push r10
    push r11
    push r12
+   push r13
+   push r14
 
-   ;int i,j;
-   ;short p = 0;
-   
-   ;for (i=DimMatrix-1; i>=0; i--) {
-   ;   for (j=DimMatrix-1; j>0; j--) {
-   ;      if ((m[i][j]!=0) && (m[i][j]==m[i][j-1])) {
-   ;         m[i][j]  = m[i][j]*2;
-   ;         m[i][j-1]= 0;
-   ;         p = p + m[i][j];
-   ;      }      
-   ;   }
-   ;}
    mov r8d, 30; r8w elemento a_ij 
+   mov r12w, 0; inicializamos a 0 el valor de los puntos ganados
+   
    for_ap_1_s:
-      cmp r8d, 0
-      je for_ap_1_e
-      
-      mov r9d, r8d
-      sub r9d, 2; r9w elemento a_ij-1 a comparar
+      cmp r8d, 0; si el valor de a_ij es 0, hemos terminado de recorrer la matriz
+      jle for_ap_1_e
 
-      if_ap_1_s:
-         cmp WORD[m+r8d], 0
-         je if_ap_1_e
-         mov r10w, WORD[m+r9d]; r10w almacenamos el valor de a_ij-1
-         cmp WORD[m+r8d], r10w
-         jne if_ap_1_e
+      mov r13d, 0; el valor que restamos al indice de la matriz en cada vuelta   
+      for_ap_2_s:
+         cmp r13d, 6
+         je for_ap_2_e
 
-         mov r11w, WORD[m+r8d]
-         imul r11w, 2; r11w guardamos el valor de a_ij*2
-
-         mov WORD[m+r8d], r11w; m+r8w guardamos a_ij*2 en a_ij
-         mov WORD[m+r9d], 0; igualamos a_ij-1 a 0
-
-         add r12w, WORD[m+r8d]; le sumamos a p el valor de m+r8w
+         mov r14d, r8d; almacenamos temporalmente el indice de la matriz
+         sub r14d, r13d; restamos el valor de la fila actual
          
-      if_ap_1_e:
-      
-      sub r8d, 2; restamos 2 a 30 cada vuelta
+         mov r9d, r14d
+         sub r9d, 2; r9w elemento a_ij-1 a comparar
 
+         if_ap_1_s:
+            cmp WORD[m+r14d], 0
+            je if_ap_1_e
+            mov r10w, WORD[m+r9d]; r10w almacenamos el valor de a_ij-1
+            cmp WORD[m+r14d], r10w
+            jne if_ap_1_e
+
+            mov r11w, WORD[m+r14d]
+            imul r11w, 2; r11w guardamos el valor de a_ij*2
+
+            mov WORD[m+r14d], r11w; m+r8w guardamos a_ij*2 en a_ij
+            mov WORD[m+r9d], 0; igualamos a_ij-1 a 0
+
+            add r12w, r11w; le sumamos a p el valor de m+r8w
+            
+         if_ap_1_e:
+
+         add r13d, 2
+
+         jmp for_ap_2_s
+         
+      for_ap_2_e:
+
+      sub r8d, 8; restamos 2 a 30 cada vuelta
       jmp for_ap_1_s
    for_ap_1_e:
-
-   ;if (p > 0) {
-   ;   state = '2';
-   ;   score = score + p;
-   ;}
 
    if_ap_2_s:
       cmp r12w, 0
       jl if_ap_2_e
 
-      mov BYTE[state], 32h
+      mov BYTE[state], 32h; usamos el valor hexadecimal 32 eqivalente a '2'
       add WORD[score], r12w
    if_ap_2_e:
 
    ; sacamos de la pila el contenido que habiamos guardado de los registros
+   pop r14
+   pop r13
    pop r12
    pop r11
    pop r10
    pop r9
    pop r8
-   
-   
+     
    mov rsp, rbp
    pop rbp
    ret
